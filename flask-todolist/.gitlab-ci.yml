@@ -1,0 +1,24 @@
+image: docker:19.03.1
+services:
+  - docker:19.03.1-dind
+
+stages:
+  - build
+  - test
+variables:
+  CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+
+build:
+  stage: build
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t registry.gitlab.com/fast-cloudcomputing/16i-0188 .
+    - docker push registry.gitlab.com/fast-cloudcomputing/16i-0188
+
+test:
+  stage: test
+  image: python:latest
+  script:
+    - pip install -r test-requirements.txt
+    - export FLASK_APP=todolist.py
+    - flask test
